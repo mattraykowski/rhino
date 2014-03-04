@@ -1,0 +1,14 @@
+{
+  "name": "rhino",
+  "version": "0.1.0",
+  "description": "Master Rhino and the Knee-Pads of Justice",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "connect": "~2.13.0"
+  }
+}

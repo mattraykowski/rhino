@@ -1,0 +1,22 @@
+{
+  "name": "rhino",
+  "version": "0.1.0",
+  "authors": [
+    "mattraykowski <matt.raykowski@gmail.com>"
+  ],
+  "description": "Master Rhino and the Knee-Pads of Justice",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.0",
+    "phaser": "~1.1.6"
+  }
+}
