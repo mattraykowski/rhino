@@ -3,18 +3,24 @@
 <html lang="en-us">
 
 <head>
-<meta charset="utf-8">
-<title>Master Rhino!</title>
+  <meta charset="utf-8">
+  <title>Master Rhino!</title>
+  <style>
+    body {
+      background-color: black;
+    }
+    .game {
+      width: 640px;
+      height: 480px;
+    }
+  </style>
 </head>
 
 <body>
-
-    <!-- Third Party Libraries -->
-    <script src="/components/jquery/dist/jquery.js"></script>
-    <script src="/components/phaser/phaser.js"></script>
-    <script src="/assets/js/rot.js"></script>
-    
-    <!-- The app code -->
-    <script src="/assets/js/rhino.js"></script>
+  <!--<div id="game-container" class="game">-->
+    <!-- the game should display in here. -->
+  <!--</div>-->
+  
+  <script data-main="assets/js/rhino" src="components/requirejs/require.js"></script>
 </body>
 </html>

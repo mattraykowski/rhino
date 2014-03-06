@@ -1,0 +1,17 @@
+{
+  "name": "example",
+  "tilemap": {
+    "file": "assets/maps/example/tilemap/tiles.json",
+    "images": [
+      { "name": "Floor", "file": "assets/tileset/Objects/Floor.png" },
+      { "name": "Door0", "file": "assets/tileset/Objects/Door0.png" },
+      { "name": "Door1", "file": "assets/tileset/Objects/Door1.png" },
+      { "name": "Wall", "file": "assets/tileset/Objects/Wall.png" },
+      { "name": "Tile", "file": "assets/tileset/Objects/Tile.png" }
+    ],
+    "layers": [
+      { "name": "World Layer", "visible": true, "collision": false, "world": true },
+      { "name": "Collision Layer", "visible": false, "collision": true, "world": false }
+    ]
+  }
+}
