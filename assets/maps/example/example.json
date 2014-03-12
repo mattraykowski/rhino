@@ -11,7 +11,7 @@
     ],
     "layers": [
       { "name": "World Layer", "visible": true, "collision": false, "world": true },
-      { "name": "Collision Layer", "visible": false, "collision": true, "world": false }
+      { "name": "Collision Layer", "visible": false, "collision": true, "world": false, "collideIndices": [ 1927 ] }
     ]
   }
 }

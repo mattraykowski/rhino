@@ -2,11 +2,12 @@
  * HUD module
  * Dependency: constants, tileindex
  */
-define(['jquery','phaser'], function(jquery, Phaser) {
+define(['lodash','jquery','phaser'], function(_, jquery, Phaser) {
   var _game = null,
       _levelData = null,
       _map = null,
-      _layer = {};
+      _layer = {},
+      _loaded = false;
   
   var loadMapJson = function(next) {
     jquery.ajax({
@@ -60,7 +61,7 @@ define(['jquery','phaser'], function(jquery, Phaser) {
       
       // Make collision layers active.
       if(layer.collision === true) {
-        //_layer[layer.name].
+        _map.setCollision(layer.collideIndices, true, _layer[layer.name]);
       }
       
       if(layer.world === true) {
@@ -68,6 +69,7 @@ define(['jquery','phaser'], function(jquery, Phaser) {
       }
     });
     
+    _loaded = true;
     next();
   };
   
@@ -92,8 +94,27 @@ define(['jquery','phaser'], function(jquery, Phaser) {
       
     },
     
-    loadLevel: function() {
-      loadLevel();
+    loadLevel: function(next) {
+      loadLevel(next);
+    },
+    
+    isLoaded: function() {
+      return _loaded;
+    },
+    
+    getCollisionLayer: function() {
+      var layerData = _.find(_levelData.tilemap.layers, function(layer) {
+        return layer.collision === true;
+      });
+      
+      // If we didn't find a collision layer just return the first one.
+      if(layerData === undefined) {
+        return _layer[_levelData.tilemap.layers[0].name];
+        
+      // Otherwise return the collision layer.
+      } else {
+        return _layer[layerData.name];
+      }
     }
-  }
+  };
 });

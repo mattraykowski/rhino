@@ -1,7 +1,8 @@
 require.config({
   'paths': {
     'phaser': '../../components/phaser/phaser',
-    'jquery': '../../components/jquery/dist/jquery'
+    'jquery': '../../components/jquery/dist/jquery',
+    'lodash': '../../components/lodash/dist/lodash'
   },
   
   shim: {
