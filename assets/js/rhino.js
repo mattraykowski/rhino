@@ -48,7 +48,7 @@ require(['phaser','rot', 'modules/constants', 'modules/tileindex', 'modules/hud'
       //MusicManager.play('backgroundMusic', true);
       
       Level.create();
-      Level.loadLevel(function() {
+      Level.loadLevel('rhino_level_1', function() {
         Player.create();
       });
       

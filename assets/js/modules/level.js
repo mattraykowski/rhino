@@ -2,85 +2,178 @@
  * HUD module
  * Dependency: constants, tileindex
  */
-define(['lodash','jquery','phaser'], function(_, jquery, Phaser) {
+define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Phaser, Constants) {
   var _game = null,
       _levelData = null,
+      _levelName = null,
       _map = null,
-      _layer = {},
-      _loaded = false;
+      _layers = [],
+      _loaded = false,
+      _collisionLayerIndex = 0;
   
-  var loadMapJson = function(next) {
-    jquery.ajax({
-      url: '/assets/maps/example/example.json'
-    }).done(function(data) {
-      _levelData = data;
-      
-      next();
-    });
+  var BASE_ASSET_TILE_PATH = 'assets/tileset/';
+
+  var waitForLoad = function(timeoutFn) {
+    if(_game.load.totalQueuedFiles() !== 0) {
+      setTimeout(function() {
+        waitForLoad(timeoutFn);
+      }, 10);
+    } else {
+      timeoutFn();
+    }
   };
   
   var preloadMap = function(next) {
-    console.log("[LOADING LEVEL] Loading level map: " + _levelData.tilemap.file);
-    _game.load.tilemap('level3', _levelData.tilemap.file, null, Phaser.Tilemap.TILED_JSON);
-      
-    // Load the images that the level will use.
-    _levelData.tilemap.images.forEach(function(tileImage) {
-      console.log("[LOADING LEVEL] Loading tile image: (" + tileImage.name +") " + tileImage.file);
-      _game.load.image(tileImage.name, tileImage.file, 16, 16);
-    });
-    
+    console.log("[LOADING LEVEL] Loading level map: " + _levelName);
+    _game.load.tilemap('level', BASE_ASSET_TILE_PATH + _levelName + '.json', null, Phaser.Tilemap.TILED_JSON);
+
+    // Kick off the loader to get the tilemap data.
     _game.load.start();
-    var waitForLoad = function() {
-      if(_game.load.totalQueuedFiles() !== 0) {
-        setTimeout(waitForLoad, 10);
-      } else {
-        next();
+    waitForLoad(function() {
+      loadTilesetImages(next);
+    });
+  };
+
+  var loadTilesetImages = function(next) {
+    var data = _game.cache.getTilemapData( 'level' ).data;
+
+    data.tilesets.forEach(function(tileset) {
+      console.log('[LOADING LEVEL] Tileset Image (' + tileset.name + ') ' + tileset.image);
+      _game.load.image(tileset.name, BASE_ASSET_TILE_PATH + tileset.image, Constants.TILE_DIM, Constants.TILE_DIM);
+    });
+
+    // Kick off the loader to load the images.
+    _game.load.start();
+
+    waitForLoad(function() {
+       next();
+     });
+   };
+  
+  var createLayers = function() {
+    var data = _game.cache.getTilemapData( 'level' ).data;
+    var layers = data.layers;
+    var layerCount = 0;
+
+    layers.forEach(function(layer) {
+      switch(layer.type) {
+        case 'tilelayer':
+          createTileLayer(layer, layerCount);
+          layerCount++;
+          break;
+        case 'objectgroup':
+          //createObjectLayer();
+          break;
+        default:
+          console.log("[LAYER LOADER] Failed to load layer: invalid layer type: " + layer.type);
+          break;
+      }
+    });
+  };
+
+  var createTileLayer = function(layer, layerLevel) {
+    var mapLayer = _map.createLayer(layerLevel);
+    mapLayer.name = layer.name;
+    mapLayer.visible = layer.visible;
+    mapLayer.fixedToCamera = false;
+
+    if(layer.properties && layer.properties.solid == 'true') {
+      mapLayer.solid = true;
+    } else {
+      mapLayer.solid = false;
+    }
+    _layers.push(mapLayer);
+  };
+
+  var createObjectLayer = function(layer) {
+
+  }
+
+  var buildCollisions = function() {
+    var data = _game.cache.getTilemapData( 'level' ).data;
+    var solidTiles = [];
+    
+    data.tilesets.forEach(function(tileset) {
+      var tileProperties = tileset.tileproperties;
+      console.log("tileset firstgid " + tileset.firstgid )
+      var tileset_gid = +tileset.firstgid;
+
+      if(tileProperties !== undefined) {
+        for(var key in tileProperties) {
+          var index = +key;
+          var tile_index = index+tileset_gid;
+
+          if( !isNaN(index)) {
+            var val = tileProperties[index];
+
+            if(val.solid !== undefined) {
+              solidTiles.push(index+tileset_gid);
+            }
+          }
+        }
+      }
+    });
+
+    for(var idx = 0; idx < _layers.length; idx++) {
+      var layer = _layers[idx];
+
+      if(layer.solid) {
+        console.log('[LOADING LEVEL] Setting solid tile collision for this layer: ' + layer.index);
+        
+        _collisionLayerIndex = idx;
+        _map.setCollision(solidTiles, true, layer);
       }
     };
-    waitForLoad();
   };
-  
+
   var buildMap = function(next) {
+    var data = _game.cache.getTilemapData( 'level' ).data;
+
      // Load the map.
-    _map = _game.add.tilemap('level3');
+    _map = _game.add.tilemap('level');
     
-    // Associate the images to the tilsets.
-    _levelData.tilemap.images.forEach(function(tileImage) {
-      _map.addTilesetImage(tileImage.name, tileImage.name);
+    data.tilesets.forEach(function(tileset) {
+      console.log('[LOADING LEVEL] Associating tileset to image (' + tileset.name + ') ' + tileset.image);
+
+      _map.addTilesetImage(tileset.name);
     });
+
+    createLayers();
     
     // Create the layers.
-    _levelData.tilemap.layers.forEach(function(layer) {
-      _layer[layer.name] = _map.createLayer(layer.name);
-      //_layer[layer.name].z = 1;
+    // _levelData.tilemap.layers.forEach(function(layer) {
+    //   _layer[layer.name] = _map.createLayer(layer.name);
+    //   //_layer[layer.name].z = 1;
       
-      // Hide invisible layers
-      if(layer.visible === false) {
-        _layer[layer.name].visible = false;
-      }
+    //   // Hide invisible layers
+    //   if(layer.visible === false) {
+    //     _layer[layer.name].visible = false;
+    //   }
       
-      // Make collision layers active.
-      if(layer.collision === true) {
-        _map.setCollision(layer.collideIndices, true, _layer[layer.name]);
-      }
+    //   // Make collision layers active.
+    //   if(layer.collision === true) {
+    //     _map.setCollision(layer.collideIndices, true, _layer[layer.name]);
+    //   }
       
-      if(layer.world === true) {
-        _layer[layer.name].resizeWorld();
-      }
-    });
+    //   if(layer.world === true) {
+    //     _layer[layer.name].resizeWorld();
+    //   }
+    // });
+
+    buildCollisions();
     
     _loaded = true;
     next();
   };
   
-  var loadLevel = function(next) {
-    loadMapJson(function() {
-      preloadMap(function() {
-        buildMap(next);
+  var loadLevel = function(levelName, next) {
+    preloadMap(function() {
+      buildMap(function() {
+        next();
       });
-    });
-    
+    });  
   };
+
   return {
     init: function(game) {
       _game = game;
@@ -94,8 +187,9 @@ define(['lodash','jquery','phaser'], function(_, jquery, Phaser) {
       
     },
     
-    loadLevel: function(next) {
-      loadLevel(next);
+    loadLevel: function(levelName, next) {
+      _levelName = levelName;
+      loadLevel(levelName, next);
     },
     
     isLoaded: function() {
@@ -103,18 +197,7 @@ define(['lodash','jquery','phaser'], function(_, jquery, Phaser) {
     },
     
     getCollisionLayer: function() {
-      var layerData = _.find(_levelData.tilemap.layers, function(layer) {
-        return layer.collision === true;
-      });
-      
-      // If we didn't find a collision layer just return the first one.
-      if(layerData === undefined) {
-        return _layer[_levelData.tilemap.layers[0].name];
-        
-      // Otherwise return the collision layer.
-      } else {
-        return _layer[layerData.name];
-      }
+      return _layers[_collisionLayerIndex];
     }
   };
 });

@@ -1,7 +1,7 @@
 {
   "name": "example",
   "tilemap": {
-    "file": "assets/maps/example/tilemap/tiles.json",
+    "file": "assets/tileset/rhino_level_1.json",
     "images": [
       { "name": "Floor", "file": "assets/tileset/Objects/Floor.png" },
       { "name": "Door0", "file": "assets/tileset/Objects/Door0.png" },
