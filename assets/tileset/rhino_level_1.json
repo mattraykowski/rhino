@@ -105,7 +105,7 @@
  "orientation":"orthogonal",
  "properties":
     {
-
+     "main_layer":"World Layer"
     },
  "tileheight":16,
  "tilesets":[
@@ -127,45 +127,6 @@
                  "tile":-1
                 }],
          "tileheight":16,
-         "tiles":
-            {
-             "126":
-                {
-                 "terrain":[-1, -1, -1, 0]
-                },
-             "127":
-                {
-                 "terrain":[-1, -1, 0, 0]
-                },
-             "128":
-                {
-                 "terrain":[-1, -1, 0, -1]
-                },
-             "147":
-                {
-                 "terrain":[-1, 0, -1, 0]
-                },
-             "148":
-                {
-                 "terrain":[0, 0, 0, 0]
-                },
-             "149":
-                {
-                 "terrain":[0, -1, 0, -1]
-                },
-             "168":
-                {
-                 "terrain":[-1, 0, -1, -1]
-                },
-             "169":
-                {
-                 "terrain":[0, 0, -1, -1]
-                },
-             "170":
-                {
-                 "terrain":[0, -1, -1, -1]
-                }
-            },
          "tilewidth":16
         }, 
         {
@@ -177,7 +138,7 @@
          "name":"Door0",
          "properties":
             {
-
+             "loader":"spritesheet"
             },
          "spacing":0,
          "tileheight":16,
@@ -192,7 +153,7 @@
          "name":"Door1",
          "properties":
             {
-
+             "loader":"spritesheet"
             },
          "spacing":0,
          "tileheight":16,
@@ -336,7 +297,7 @@
          "name":"Decor",
          "properties":
             {
-
+             "loader":"spritesheet"
             },
          "spacing":0,
          "tileheight":16,
