@@ -12,8 +12,8 @@ require.config({
   }
 });
 
-require(['phaser','rot', 'modules/constants', 'modules/tileindex', 'modules/hud', 'modules/map', 'modules/musicmanager', 'modules/level', 'modules/player'], 
-    function(Phaser, ROT, Constants, TileIndex, HUD, Map, MusicManager, Level, Player) {
+require(['phaser','rot', 'modules/constants', 'modules/tileindex', 'modules/hud', 'modules/map', 'modules/musicmanager', 'modules/level', 'modules/player', 'modules/entities'], 
+    function(Phaser, ROT, Constants, TileIndex, HUD, Map, MusicManager, Level, Player, Entities) {
       
   var _game = null;
   
@@ -35,6 +35,7 @@ require(['phaser','rot', 'modules/constants', 'modules/tileindex', 'modules/hud'
       
       Level.init(rhino.game);
       Player.init(rhino.game);
+      Entities.init(rhino.game);
     },
     
     create: function() {

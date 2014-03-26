@@ -2,14 +2,15 @@
  * HUD module
  * Dependency: constants, tileindex
  */
-define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Phaser, Constants) {
+define(['lodash','jquery','phaser', 'modules/constants', 'modules/entities'], function(_, jquery, Phaser, Constants, Entities) {
   var _game = null,
       _levelData = null,
       _levelName = null,
       _map = null,
       _layers = [],
       _loaded = false,
-      _collisionLayerIndex = 0;
+      _collisionLayerIndex = 0,
+      _groups = [];
   
   var BASE_ASSET_TILE_PATH = 'assets/tileset/';
 
@@ -62,7 +63,7 @@ define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Ph
           layerCount++;
           break;
         case 'objectgroup':
-          //createObjectLayer();
+          createObjectLayer(layer, data.tilesets);
           break;
         default:
           console.log("[LAYER LOADER] Failed to load layer: invalid layer type: " + layer.type);
@@ -85,9 +86,50 @@ define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Ph
     _layers.push(mapLayer);
   };
 
-  var createObjectLayer = function(layer) {
-
-  }
+  var createObjectLayer = function(layer, tilesets) {
+    var og = layer;
+    var group = _game.add.group();
+    group.name = og.name || '';
+    group.visible = og.visible === undefined ? true : og.visible;
+    group.alpha = +og.opacity || 1;
+    
+    og.objects.forEach(function(ogObject) {
+      console.log(ogObject);
+      
+      var tileset_name;
+      var tileset_id;
+      // We'll need to look up the tileset that this uses to determine the sprintsheet and tileset ID to use.
+      console.log(tilesets.length)
+      var last_tileset;
+      for(var idx=0; idx < tilesets.length; idx++) {
+        var tileset = tilesets[idx];
+        //console.log(tileset);
+        //console.log("first gid: " + tileset.first_gid + " tile gid: " + ogObject.gid);
+        var tilesetFirstGid = +tileset.firstgid;
+        var objectGid = +ogObject.gid;
+        if(tilesetFirstGid > objectGid) {
+          var lastTilesetFirstGid = +last_tileset.firstgid;
+          
+          tileset_name = last_tileset.name;
+          tileset_id = objectGid - lastTilesetFirstGid;
+          console.log("matched: " + tileset_name + " with local id:" +tileset_id);
+          break;
+        } else {
+          last_tileset = tileset;
+        }
+      }
+      var newObject = Entities.create(ogObject.type, tileset_name, tileset_id, ogObject.name, ogObject.x, ogObject.y, ogObject.width, ogObject.height, ogObject.properties);
+      
+      if(newObject === null) {
+        return;
+      }
+      
+      group.add(newObject);
+      _groups.push(group);
+    });
+    
+    console.log(og.name);
+  };
 
   var buildCollisions = function() {
     var data = _game.cache.getTilemapData( 'level' ).data;
@@ -95,7 +137,6 @@ define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Ph
     
     data.tilesets.forEach(function(tileset) {
       var tileProperties = tileset.tileproperties;
-      console.log("tileset firstgid " + tileset.firstgid )
       var tileset_gid = +tileset.firstgid;
 
       if(tileProperties !== undefined) {
@@ -140,25 +181,12 @@ define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Ph
 
     createLayers();
     
-    // Create the layers.
-    // _levelData.tilemap.layers.forEach(function(layer) {
-    //   _layer[layer.name] = _map.createLayer(layer.name);
-    //   //_layer[layer.name].z = 1;
-      
-    //   // Hide invisible layers
-    //   if(layer.visible === false) {
-    //     _layer[layer.name].visible = false;
-    //   }
-      
-    //   // Make collision layers active.
-    //   if(layer.collision === true) {
-    //     _map.setCollision(layer.collideIndices, true, _layer[layer.name]);
-    //   }
-      
-    //   if(layer.world === true) {
-    //     _layer[layer.name].resizeWorld();
-    //   }
-    // });
+    var main_layer_name = data.properties.main_layer || 'World Layer';
+    var main_layer = _.first(_layers, function(layer) {
+      return layer.name == main_layer_name
+    });
+    
+    main_layer[0].resizeWorld();
 
     buildCollisions();
     
@@ -184,7 +212,9 @@ define(['lodash','jquery','phaser', 'modules/constants'], function(_, jquery, Ph
     },
     
     update: function() {
-      
+      _groups.forEach(function(group) {
+        group.exists = true;
+      });
     },
     
     loadLevel: function(levelName, next) {
