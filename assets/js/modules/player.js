@@ -23,7 +23,7 @@ define(['phaser', 'modules/constants', 'modules/level'], function(Phaser, Consta
       _playerSprite.body.collideWorldBounds = true;
       _playerSprite.z = 100;
 
-      _game.camera.follow(_playerSprite);
+      _game.camera.follow(_playerSprite, Phaser.Camera.FOLLOW_PLATFORMER);
       _cursors = _game.input.keyboard.createCursorKeys();
 
     },
